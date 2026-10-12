@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-<title>⚽ Футбол по Wi-Fi</title>
+<title>⚽ Футбол 2D</title>
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
 
@@ -154,7 +154,7 @@
     top: 35%;
     left: 0; right: 0;
     text-align: center;
-    font-size: 38px;
+    font-size: 34px;
     font-weight: bold;
     color: #ffd93d;
     text-shadow: 0 0 20px black, 0 0 40px #ffd93d;
@@ -163,13 +163,26 @@
     z-index: 40;
     pointer-events: none;
     transform: scale(0.5);
+    padding: 0 15px;
   }
   #goal-text.show { opacity: 1; transform: scale(1); }
 
-  /* КНОПКИ СЛЕВА */
-  #controls {
+  /* КНОПКИ СЛЕВА (для игрока 1) */
+  #controls-left {
     position: absolute;
     left: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    z-index: 15;
+  }
+
+  /* КНОПКИ СПРАВА (для игрока 2 в режиме "один экран") */
+  #controls-right {
+    position: absolute;
+    right: 10px;
     top: 50%;
     transform: translateY(-50%);
     display: flex;
@@ -265,6 +278,7 @@
     align-items: center;
     padding: 25px;
     text-align: center;
+    overflow-y: auto;
   }
 
   #overlay h1 {
@@ -279,6 +293,39 @@
     margin-bottom: 10px;
     line-height: 1.5;
   }
+
+  #overlay .mode-btn {
+    margin: 6px 0;
+    padding: 18px 25px;
+    font-size: 18px;
+    font-weight: bold;
+    font-family: inherit;
+    color: white;
+    border: 3px solid white;
+    border-radius: 14px;
+    cursor: pointer;
+    box-shadow: 0 5px 0 rgba(0,0,0,0.4);
+    min-width: 260px;
+    text-align: left;
+    transition: transform 0.1s;
+  }
+
+  #overlay .mode-btn:active {
+    transform: translateY(3px);
+    box-shadow: 0 2px 0 rgba(0,0,0,0.4);
+  }
+
+  #overlay .mode-btn small {
+    display: block;
+    font-size: 12px;
+    opacity: 0.85;
+    margin-top: 3px;
+    font-weight: normal;
+  }
+
+  .mode-bot     { background: linear-gradient(135deg, #a855f7, #7c3aed); }
+  .mode-split   { background: linear-gradient(135deg, #f59e0b, #d97706); }
+  .mode-online  { background: linear-gradient(135deg, #4ade80, #22c55e); }
 
   #overlay input {
     width: 100%;
@@ -303,7 +350,7 @@
     box-shadow: 0 0 15px rgba(255,217,61,0.6);
   }
 
-  #overlay button {
+  #overlay .action-btn {
     margin: 8px 0;
     padding: 15px 30px;
     font-size: 18px;
@@ -318,20 +365,26 @@
     min-width: 240px;
   }
 
-  #overlay button:active {
+  #overlay .action-btn:active {
     transform: translateY(3px);
     box-shadow: 0 2px 0 rgba(0,0,0,0.4);
+  }
+
+  #overlay .back-btn {
+    background: linear-gradient(135deg, #94a3b8, #64748b);
+    min-width: 200px;
+    margin-top: 15px;
   }
 
   #overlay .code-box {
     background: #ffd93d;
     color: #1a3d1a;
-    font-size: 42px;
+    font-size: 38px;
     font-weight: bold;
-    padding: 15px 30px;
+    padding: 15px 25px;
     border-radius: 15px;
     margin: 15px 0;
-    letter-spacing: 8px;
+    letter-spacing: 6px;
     font-family: monospace;
     box-shadow: 0 0 25px rgba(255,217,61,0.8);
     cursor: pointer;
@@ -340,7 +393,7 @@
   #overlay .status {
     font-size: 15px;
     color: #4ade80;
-    margin-top: 15px;
+    margin-top: 12px;
     min-height: 20px;
   }
 
@@ -353,7 +406,7 @@
     align-items: center;
     gap: 10px;
     color: #888;
-    margin: 15px 0;
+    margin: 12px 0;
     font-size: 14px;
   }
   #overlay .divider::before,
@@ -396,29 +449,26 @@
   <div id="goal-flash"></div>
   <div id="goal-text">ГОООЛ!</div>
 
-  <div id="controls" class="hidden">
-    <button class="btn" id="btn-up">⬆</button>
-    <button class="btn" id="btn-left">⬅</button>
-    <button class="btn" id="btn-down">⬇</button>
-    <button class="btn" id="btn-right">➡</button>
+  <!-- Кнопки слева (игрок 1) -->
+  <div id="controls-left" class="hidden">
+    <button class="btn btn-blue" id="btn-l-up">⬆</button>
+    <button class="btn btn-blue" id="btn-l-left">⬅</button>
+    <button class="btn btn-blue" id="btn-l-down">⬇</button>
+    <button class="btn btn-blue" id="btn-l-right">➡</button>
   </div>
 
-  <div id="overlay">
-    <h1>⚽ ФУТБОЛ по Wi-Fi</h1>
-    <p>Игра на двоих. Один создаёт комнату,<br>второй вводит код.</p>
-
-    <button id="create-btn">🏠 Создать комнату</button>
-
-    <div class="divider">или</div>
-
-    <input type="text" id="code-input" placeholder="КОД" maxlength="6" inputmode="text">
-    <button id="join-btn">🔗 Подключиться</button>
-
-    <div class="status" id="status"></div>
+  <!-- Кнопки справа (игрок 2 в режиме "один экран") -->
+  <div id="controls-right" class="hidden">
+    <button class="btn btn-red" id="btn-r-up">⬆</button>
+    <button class="btn btn-red" id="btn-r-left">⬅</button>
+    <button class="btn btn-red" id="btn-r-down">⬇</button>
+    <button class="btn btn-red" id="btn-r-right">➡</button>
   </div>
+
+  <div id="overlay"></div>
 </div>
 
-<!-- PeerJS с публичного сервера -->
+<!-- PeerJS -->
 <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
 
 <script>
@@ -432,20 +482,21 @@
   const overlay = document.getElementById('overlay');
   const goalFlash = document.getElementById('goal-flash');
   const goalText = document.getElementById('goal-text');
-  const controls = document.getElementById('controls');
+  const controlsLeft = document.getElementById('controls-left');
+  const controlsRight = document.getElementById('controls-right');
   const youBadge = document.getElementById('you');
   const youColor = document.getElementById('you-color');
   const camPreview = document.getElementById('cam-preview');
   const camVideo = document.getElementById('cam');
   const goalLeft = document.getElementById('goal-left');
   const goalRight = document.getElementById('goal-right');
-  const statusEl = document.getElementById('status');
 
   // ============ Состояние ============
   let W, H;
+  let mode = null; // 'bot' | 'split' | 'online'
+  let myRole = null; // 'host' | 'guest'
   let peer = null;
   let conn = null;
-  let myRole = null; // 'host' или 'guest'
   let myPeerId = null;
 
   const player1 = { x: 0, y: 0, vx: 0, vy: 0, speed: 3.2, size: 44 };
@@ -457,6 +508,9 @@
   let pressed = {};
   const WIN_SCORE = 3;
   let lastTime = 0;
+
+  // Бот
+  let botTargetX = 0, botTargetY = 0, botThink = 0;
 
   // ============ Размеры ============
   function resize() {
@@ -479,9 +533,10 @@
     pressed[e.key.toLowerCase()] = false;
   });
 
-  // ============ Кнопки слева ============
+  // ============ Кнопки ============
   function bindBtn(id, key) {
     const btn = document.getElementById(id);
+    if (!btn) return;
     const press = (e) => {
       e.preventDefault();
       pressed[key] = true;
@@ -500,10 +555,17 @@
     btn.addEventListener('touchcancel', release);
   }
 
-  bindBtn('btn-up', 'w');
-  bindBtn('btn-left', 'a');
-  bindBtn('btn-down', 's');
-  bindBtn('btn-right', 'd');
+  // Левые кнопки (игрок 1)
+  bindBtn('btn-l-up', 'w');
+  bindBtn('btn-l-left', 'a');
+  bindBtn('btn-l-down', 's');
+  bindBtn('btn-l-right', 'd');
+
+  // Правые кнопки (игрок 2)
+  bindBtn('btn-r-up', 'ArrowUp');
+  bindBtn('btn-r-left', 'ArrowLeft');
+  bindBtn('btn-r-down', 'ArrowDown');
+  bindBtn('btn-r-right', 'ArrowRight');
 
   // ============ Камера ============
   async function startCamera() {
@@ -519,19 +581,100 @@
     }
   }
 
-  // ============ Генерация кода комнаты ============
+  // ============ ГЛАВНОЕ МЕНЮ ============
+  function showMenu() {
+    mode = null;
+    running = false;
+    overlay.classList.remove('hidden');
+    overlay.innerHTML = `
+      <h1>⚽ ФУТБОЛ 2D</h1>
+      <p>Выбери режим игры:</p>
+      <button class="mode-btn mode-bot" onclick="startBotMode()">
+        🤖 С БОТОМ
+        <small>Играй против компьютера</small>
+      </button>
+      <button class="mode-btn mode-split" onclick="startSplitMode()">
+        👥 ОДИН ЭКРАН
+        <small>Двое на одном устройстве</small>
+      </button>
+      <button class="mode-btn mode-online" onclick="showOnlineMenu()">
+        🌐 ПО КОДУ
+        <small>Играть с другом по Wi-Fi</small>
+      </button>
+      <p style="font-size: 12px; opacity: 0.7; margin-top: 20px;">
+        ⚽ Забей 3 гола и победи!
+      </p>
+    `;
+  }
+
+  // ============ ОНЛАЙН-МЕНЮ ============
+  function showOnlineMenu() {
+    overlay.innerHTML = `
+      <h1>🌐 Онлайн-игра</h1>
+      <p>Один создаёт комнату, второй вводит код</p>
+
+      <button class="action-btn" onclick="createRoom()">🏠 Создать комнату</button>
+
+      <div class="divider">или</div>
+
+      <input type="text" id="code-input" placeholder="КОД" maxlength="6" inputmode="text">
+      <button class="action-btn" onclick="joinRoom()">🔗 Подключиться</button>
+
+      <div class="status" id="status"></div>
+
+      <button class="action-btn back-btn" onclick="showMenu()">← Назад</button>
+    `;
+  }
+
+  // ============ РЕЖИМ 1: С БОТОМ ============
+  function startBotMode() {
+    mode = 'bot';
+    myRole = 'host';
+    overlay.classList.add('hidden');
+    controlsLeft.classList.remove('hidden');
+    controlsRight.classList.add('hidden');
+    youBadge.classList.remove('hidden');
+    youColor.textContent = '🔵 ТЫ';
+    youColor.style.color = '#4a9eff';
+    goalLeft.classList.add('my-goal');
+
+    resize();
+    resetPositions();
+    running = true;
+    lastTime = performance.now();
+    requestAnimationFrame(loop);
+  }
+
+  // ============ РЕЖИМ 2: ОДИН ЭКРАН ============
+  function startSplitMode() {
+    mode = 'split';
+    myRole = 'host';
+    overlay.classList.add('hidden');
+    controlsLeft.classList.remove('hidden');
+    controlsRight.classList.remove('hidden');
+    youBadge.classList.remove('hidden');
+    youColor.textContent = '🔵 P1 vs 🔴 P2';
+    youColor.style.color = '#ffd93d';
+
+    resize();
+    resetPositions();
+    running = true;
+    lastTime = performance.now();
+    requestAnimationFrame(loop);
+  }
+
+  // ============ РЕЖИМ 3: ОНЛАЙН ============
   function generateCode() {
     const letters = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
-    let code = 'FB-';
+    let code = 'FB';
     for (let i = 0; i < 4; i++) {
       code += letters[Math.floor(Math.random() * letters.length)];
     }
     return code;
   }
 
-  // ============ PeerJS ============
   function initPeer(customId = null) {
-    const id = customId || ('fb-' + Math.random().toString(36).substring(2, 10));
+    const id = customId || ('fb-' + Math.random().toString(36).substring(2, 12));
     peer = new Peer(id, {
       debug: 1,
       config: {
@@ -542,27 +685,24 @@
       }
     });
 
-    peer.on('open', (id) => {
-      myPeerId = id;
-      console.log('Peer открыт с ID:', id);
-    });
+    peer.on('open', (id) => { myPeerId = id; });
 
     peer.on('error', (err) => {
-      console.error('Peer error:', err);
+      const st = document.getElementById('status');
+      if (!st) return;
       if (err.type === 'unavailable-id') {
-        statusEl.textContent = 'Код занят, попробуй ещё раз';
-        statusEl.className = 'status error';
+        st.textContent = 'Код занят, попробуй ещё';
+        st.className = 'status error';
       } else if (err.type === 'peer-unavailable') {
-        statusEl.textContent = 'Комната не найдена';
-        statusEl.className = 'status error';
+        st.textContent = 'Комната не найдена';
+        st.className = 'status error';
       } else {
-        statusEl.textContent = 'Ошибка: ' + err.type;
-        statusEl.className = 'status error';
+        st.textContent = 'Ошибка: ' + err.type;
+        st.className = 'status error';
       }
     });
 
     peer.on('connection', (connection) => {
-      // Кто-то подключается к нам (мы хост)
       conn = connection;
       setupConnection();
     });
@@ -570,45 +710,42 @@
     return peer;
   }
 
-  // ============ Создание комнаты ============
-  document.getElementById('create-btn').onclick = () => {
-    statusEl.textContent = 'Создаём комнату...';
-    statusEl.className = 'status';
-
-    const code = generateCode();
+  function createRoom() {
+    mode = 'online';
     myRole = 'host';
+    const code = generateCode();
+    const st = document.getElementById('status');
+    st.textContent = 'Создаём комнату...';
+    st.className = 'status';
+
     initPeer(code);
 
-    // Ждём открытия peer'а, потом показываем код
     const waitOpen = setInterval(() => {
       if (myPeerId) {
         clearInterval(waitOpen);
         showWaitingRoom(code);
       }
     }, 100);
-  };
+  }
 
-  // ============ Подключение к комнате ============
-  document.getElementById('join-btn').onclick = () => {
+  function joinRoom() {
+    mode = 'online';
+    myRole = 'guest';
     let code = document.getElementById('code-input').value.trim().toUpperCase();
     if (code.length < 4) {
-      statusEl.textContent = 'Введи код комнаты';
-      statusEl.className = 'status error';
+      const st = document.getElementById('status');
+      st.textContent = 'Введи код';
+      st.className = 'status error';
       return;
     }
-    // Добавляем префикс если не указан
-    if (!code.startsWith('FB-')) {
-      code = 'FB-' + code.replace('FB-', '');
-    }
+    if (!code.startsWith('FB')) code = 'FB' + code;
 
-    statusEl.textContent = 'Подключаемся...';
-    statusEl.className = 'status';
+    const st = document.getElementById('status');
+    st.textContent = 'Подключаемся...';
+    st.className = 'status';
 
-    myRole = 'guest';
     initPeer();
-    myPeerId = null; // сброс
 
-    // Ждём открытия, потом подключаемся
     const waitOpen = setInterval(() => {
       if (peer && peer.open) {
         clearInterval(waitOpen);
@@ -616,18 +753,15 @@
         setupConnection();
       }
     }, 100);
-  };
+  }
 
-  // ============ Настройка соединения ============
   function setupConnection() {
     conn.on('open', () => {
       console.log('Соединение установлено!');
-      startMatch();
+      startOnlineMatch();
     });
 
-    conn.on('data', (data) => {
-      handleData(data);
-    });
+    conn.on('data', (data) => handleData(data));
 
     conn.on('close', () => {
       running = false;
@@ -635,20 +769,17 @@
       goalText.classList.add('show');
       setTimeout(() => location.reload(), 2500);
     });
-
-    conn.on('error', (err) => {
-      console.error('Connection error:', err);
-    });
   }
 
   function showWaitingRoom(code) {
     overlay.innerHTML = `
       <h1>🏠 Комната создана!</h1>
       <p>Скажи другу этот код:</p>
-      <div class="code-box" onclick="copyCode('${code}')" title="Нажми чтобы скопировать">${code}</div>
-      <p style="font-size: 12px; opacity: 0.7;">👆 нажми на код, чтобы скопировать</p>
+      <div class="code-box" onclick="copyCode('${code}')">${code}</div>
+      <p style="font-size: 12px; opacity: 0.7;">👆 нажми, чтобы скопировать</p>
       <p style="font-size: 13px; opacity: 0.8;">Ждём второго игрока...</p>
-      <div class="status" id="wait-status">⏳ Ожидание...</div>
+      <div class="status" id="status">⏳ Ожидание...</div>
+      <button class="action-btn back-btn" onclick="location.reload()">← Отмена</button>
     `;
   }
 
@@ -659,39 +790,40 @@
     setTimeout(() => { el.textContent = code; }, 1000);
   }
 
-  // ============ Начало матча ============
-  async function startMatch() {
+  async function startOnlineMatch() {
     overlay.classList.add('hidden');
-    controls.classList.remove('hidden');
+    controlsLeft.classList.remove('hidden');
+    controlsRight.classList.add('hidden');
     youBadge.classList.remove('hidden');
 
     if (myRole === 'host') {
       youColor.textContent = '🔵 СИНИЕ';
       youColor.style.color = '#4a9eff';
-      document.querySelectorAll('.btn').forEach(b => b.classList.add('btn-blue'));
       goalLeft.classList.add('my-goal');
     } else {
       youColor.textContent = '🔴 КРАСНЫЕ';
       youColor.style.color = '#ff6b6b';
-      document.querySelectorAll('.btn').forEach(b => b.classList.add('btn-red'));
       goalRight.classList.add('my-goal');
     }
 
     await startCamera();
-
     resize();
     resetPositions();
-
     running = true;
     lastTime = performance.now();
     requestAnimationFrame(loop);
   }
 
+  // ============ Сброс позиций ============
   function resetPositions() {
     player1.x = W * 0.25;
     player1.y = H * 0.5;
+    player1.vx = 0; player1.vy = 0;
+
     player2.x = W * 0.75;
     player2.y = H * 0.5;
+    player2.vx = 0; player2.vy = 0;
+
     ball.x = W / 2;
     ball.y = H / 2;
     ball.vx = 0;
@@ -704,41 +836,98 @@
     const dt = Math.min(2, (now - lastTime) / 16.67);
     lastTime = now;
 
-    if (myRole === 'host') {
-      updateMyPlayer(player1, dt);
+    if (mode === 'bot') {
+      updatePlayer1(dt);
+      updateBot(dt);
       updateBallPhysics(dt);
       draw();
-      sendState();
-    } else {
-      updateMyPlayer(player2, dt);
+    } else if (mode === 'split') {
+      updatePlayer1(dt);
+      updatePlayer2(dt);
       updateBallPhysics(dt);
       draw();
-      sendState();
+    } else if (mode === 'online') {
+      if (myRole === 'host') {
+        updatePlayer1(dt);
+        updateBallPhysics(dt);
+        draw();
+        sendState();
+      } else {
+        updatePlayer2(dt);
+        updateBallPhysics(dt);
+        draw();
+        sendState();
+      }
     }
 
     requestAnimationFrame(loop);
   }
 
-  function updateMyPlayer(player, dt) {
+  // ============ Игрок 1 (управление W/A/S/D) ============
+  function updatePlayer1(dt) {
     let ax = 0, ay = 0;
     if (pressed['w'] || pressed['W'] || pressed['ц'] || pressed['Ц']) ay -= 1;
     if (pressed['s'] || pressed['S'] || pressed['ы'] || pressed['Ы']) ay += 1;
     if (pressed['a'] || pressed['A'] || pressed['ф'] || pressed['Ф']) ax -= 1;
     if (pressed['d'] || pressed['D'] || pressed['в'] || pressed['В']) ax += 1;
+    movePlayer(player1, ax, ay, dt);
+  }
 
+  // ============ Игрок 2 (стрелки) ============
+  function updatePlayer2(dt) {
+    let ax = 0, ay = 0;
+    if (pressed['ArrowUp']) ay -= 1;
+    if (pressed['ArrowDown']) ay += 1;
+    if (pressed['ArrowLeft']) ax -= 1;
+    if (pressed['ArrowRight']) ax += 1;
+    movePlayer(player2, ax, ay, dt);
+  }
+
+  function movePlayer(player, ax, ay, dt) {
     player.vx = ax * player.speed * dt;
     player.vy = ay * player.speed * dt;
     player.x += player.vx;
     player.y += player.vy;
-
     const r = player.size / 2;
     player.x = Math.max(r, Math.min(W - r, player.x));
     player.y = Math.max(r + 30, Math.min(H - r - 30, player.y));
   }
 
-  // Физику мяча считает хост
+  // ============ БОТ ============
+  function updateBot(dt) {
+    botThink -= dt;
+    if (botThink <= 0) {
+      botThink = 5; // пересчёт каждые ~5 кадров
+
+      // Бот хочет быть между мячом и своими воротами (справа)
+      // Целевая точка — сзади мяча, чтобы толкнуть его влево
+      const ownGoalX = W - 30;
+      const targetX = ball.x + (ball.x < ownGoalX - 50 ? 40 : 0);
+      const targetY = ball.y;
+
+      // Если мяч далеко — двигаемся к нему
+      botTargetX = Math.max(W * 0.4, Math.min(W - 30, ball.x + 30));
+      botTargetY = ball.y;
+
+      // Немного опережения
+      botTargetX += ball.vx * 5;
+      botTargetY += ball.vy * 5;
+    }
+
+    // Двигаемся к цели
+    let ax = 0, ay = 0;
+    const dx = botTargetX - player2.x;
+    const dy = botTargetY - player2.y;
+    if (Math.abs(dx) > 5) ax = dx > 0 ? 1 : -1;
+    if (Math.abs(dy) > 5) ay = dy > 0 ? 1 : -1;
+
+    movePlayer(player2, ax, ay, dt);
+  }
+
+  // ============ Физика мяча ============
   function updateBallPhysics(dt) {
-    if (myRole !== 'host') return;
+    // Только хост считает физику (в онлайн), или в локальных режимах — всегда
+    if (mode === 'online' && myRole !== 'host') return;
 
     ball.x += ball.vx * dt;
     ball.y += ball.vy * dt;
@@ -749,147 +938,18 @@
 
     const r = ball.size / 2;
 
+    // Стены верх/низ
     if (ball.y - r < 30) { ball.y = 30 + r; ball.vy = -ball.vy * 0.7; }
     if (ball.y + r > H - 30) { ball.y = H - 30 - r; ball.vy = -ball.vy * 0.7; }
 
+    // Голы
     const goalTop = H / 2 - 60;
     const goalBottom = H / 2 + 60;
 
     if (ball.x - r < 14 && ball.y > goalTop && ball.y < goalBottom) {
       score2++;
       s2El.textContent = score2;
-      sendData({ type: 'goal', side: 'left', s1: score1, s2: score2 });
-      showGoalText('🔴 КРАСНЫЕ ЗАБИЛИ!');
-      return;
-    }
-    if (ball.x + r > W - 14 && ball.y > goalTop && ball.y < goalBottom) {
-      score1++;
-      s1El.textContent = score1;
-      sendData({ type: 'goal', side: 'right', s1: score1, s2: score2 });
-      showGoalText('🔵 СИНИЕ ЗАБИЛИ!');
-      return;
-    }
-
-    if (ball.x - r < 0) { ball.x = r; ball.vx = -ball.vx * 0.7; }
-    if (ball.x + r > W) { ball.x = W - r; ball.vx = -ball.vx * 0.7; }
-
-    checkCollision(player1);
-    checkCollision(player2);
-  }
-
-  function checkCollision(player) {
-    const dx = ball.x - player.x;
-    const dy = ball.y - player.y;
-    const dist = Math.sqrt(dx * dx + dy * dy);
-    const minDist = (ball.size + player.size) / 2 + 2;
-
-    if (dist < minDist && dist > 0) {
-      const nx = dx / dist;
-      const ny = dy / dist;
-      ball.x = player.x + nx * minDist;
-      ball.y = player.y + ny * minDist;
-      const power = 7;
-      ball.vx = nx * power + player.vx * 0.5;
-      ball.vy = ny * power + player.vy * 0.5;
-    }
-  }
-
-  // ============ Передача данных ============
-  function sendData(data) {
-    if (conn && conn.open) {
-      conn.send(data);
-    }
-  }
-
-  function sendState() {
-    const data = {
-      type: 'state',
-      bx: ball.x, by: ball.y, bvx: ball.vx, bvy: ball.vy,
-      s1: score1, s2: score2
-    };
-    if (myRole === 'host') {
-      data.p1x = player1.x; data.p1y = player1.y;
-    } else {
-      data.p2x = player2.x; data.p2y = player2.y;
-    }
-    sendData(data);
-  }
-
-  function handleData(data) {
-    if (data.type === 'state') {
-      if (myRole === 'host') {
-        player2.x = data.p2x;
-        player2.y = data.p2y;
-      } else {
-        player1.x = data.p1x;
-        player1.y = data.p1y;
+      if (mode === 'online' && myRole === 'host') {
+        sendData({ type: 'goal', side: 'left', s1: score1, s2: score2 });
       }
-      ball.x = data.bx;
-      ball.y = data.by;
-      ball.vx = data.bvx;
-      ball.vy = data.bvy;
-      score1 = data.s1;
-      score2 = data.s2;
-      s1El.textContent = score1;
-      s2El.textContent = score2;
-    } else if (data.type === 'goal') {
-      score1 = data.s1;
-      score2 = data.s2;
-      s1El.textContent = score1;
-      s2El.textContent = score2;
-      if (data.side === 'left') {
-        showGoalText('🔴 КРАСНЫЕ ЗАБИЛИ!');
-      } else {
-        showGoalText('🔵 СИНИЕ ЗАБИЛИ!');
-      }
-    }
-  }
-
-  // ============ Гол ============
-  function showGoalText(text) {
-    goalText.textContent = text;
-    goalText.classList.add('show');
-    goalFlash.classList.add('show');
-
-    setTimeout(() => {
-      goalText.classList.remove('show');
-      goalFlash.classList.remove('show');
-
-      if (score1 >= WIN_SCORE || score2 >= WIN_SCORE) {
-        endMatch();
-      } else if (myRole === 'host') {
-        ball.x = W / 2;
-        ball.y = H / 2;
-        ball.vx = 0;
-        ball.vy = 0;
-      }
-    }, 1500);
-  }
-
-  function endMatch() {
-    running = false;
-    const winner = score1 >= WIN_SCORE ? '🔵 СИНИЕ' : '🔴 КРАСНЫЕ';
-    const iWon = (myRole === 'host' && score1 >= WIN_SCORE) ||
-                 (myRole === 'guest' && score2 >= WIN_SCORE);
-
-    overlay.classList.remove('hidden');
-    overlay.innerHTML = `
-      <h1>${iWon ? '🏆 ТЫ ПОБЕДИЛ!' : '😢 ТЫ ПРОИГРАЛ'}</h1>
-      <p style="font-size: 22px;">${winner} победили</p>
-      <p style="font-size: 20px;">Счёт: ${score1} : ${score2}</p>
-      <button onclick="location.reload()">🔄 Играть снова</button>
-    `;
-  }
-
-  // ============ Отрисовка ============
-  function draw() {
-    p1.style.left = (player1.x - player1.size/2) + 'px';
-    p1.style.top = (player1.y - player1.size/2) + 'px';
-    p2.style.left = (player2.x - player2.size/2) + 'px';
-    p2.style.top = (player2.y - player2.size/2) + 'px';
-    ballEl.style.left = (ball.x - ball.size/2) + 'px';
-    ballEl.style.top = (ball.y - ball.size/2) + 'px';
-  }
-</script>
-</body>
-</html>
+      showGoal
